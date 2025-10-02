@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>เข้าสู่ระบบ</title>
+  <link href="https://fonts.googleapis.com/css2?family=Itim&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0; font-family: 'Itim', cursive;
+      background: linear-gradient(135deg, #ACB6E5, #74ebd5);
+      display: flex; justify-content: center; align-items: center;
+      min-height: 100vh; padding: 20px;
+    }
+    .container {
+      background: #fff; padding: 30px 40px; border-radius: 18px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      max-width: 420px; width: 100%;
+    }
+    h1 { text-align: center; color: #333; margin-bottom: 24px; }
+    label { display: block; margin-bottom: 6px; font-weight: bold; color: #555; }
+    input {
+      width: 100%; padding: 12px; border-radius: 10px;
+      border: 1px solid #ccc; margin-bottom: 16px;
+      font-family: 'Itim', cursive;
+    }
+    button {
+      width: 100%; padding: 14px; border: none; border-radius: 10px;
+      background: #2196F3; color: white; font-size: 16px; cursor: pointer;
+      margin-bottom: 10px;
+    }
+    button:hover { background: #1976D2; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div style="text-align:center; margin-bottom:20px;">
+      <img src="https://image2url.com/images/1759080347158-cdd8e5b6-c5ee-4ab0-aa72-6cff6d590868.png" alt="Club Logo" style="max-width:120px; border-radius:12px;" />
+    </div>
+    <h1>เข้าสู่ระบบ</h1>
+    <form id="loginForm">
+      <label for="idnumber">เลขประจำตัวนักเรียน</label>
+      <input type="text" id="idnumber" name="idnumber" required />
+
+      <label for="password">รหัสผ่าน</label>
+      <input type="password" id="password" name="password" required />
+
+      <button type="submit">เข้าสู่ระบบ</button>
+    </form>
+    <div style="text-align:center; margin-top:16px;">
+      <a href="register.html" style="color:#2196F3; text-decoration:underline; font-size:16px;">
+        สมัครสมาชิก
+      </a>
+    </div>
+    <div id="msg" style="margin-top:16px; text-align:center; color:#d32f2f;"></div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { 
+      getFirestore, collection, query, where, getDocs, doc, getDoc, setDoc 
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCmDBt1LJLWUEljGQVjYcaJ5FJRm9pcM_k",
+      authDomain: "wedappis.firebaseapp.com",
+      projectId: "wedappis",
+      storageBucket: "wedappis.appspot.com",
+      messagingSenderId: "838403173250",
+      appId: "1:838403173250:web:1f5fc5786c6c1104c4bd9b",
+      measurementId: "G-F73HSEZBBW"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const form = document.getElementById("loginForm");
+    const msg = document.getElementById("msg");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      msg.textContent = "";
+
+      const idnumber = document.getElementById("idnumber").value.trim();
+      const password = document.getElementById("password").value;
+
+      try {
+        // 🔍 ค้นหาอีเมลจาก Firestore ด้วยเลขประจำตัว
+        const q = query(collection(db, "users"), where("idnumber", "==", idnumber));
+        const snap = await getDocs(q);
+
+        if (snap.empty) {
+          msg.textContent = "ไม่พบเลขประจำตัวนี้";
+          return;
+        }
+
+        const userData = snap.docs[0].data();
+        const email = userData.email;
+
+        // 🔑 เข้าสู่ระบบด้วยอีเมลและรหัสผ่าน
+        const cred = await signInWithEmailAndPassword(auth, email, password);
+
+        // 📥 ดึง role
+        const userDocRef = doc(db, "users", cred.user.uid);
+        const userDoc = await getDoc(userDocRef);
+        const role = (userDoc.data().memberType || "").toLowerCase();
+
+        // ✅ Sync ข้อมูลกลับเข้า Firestore เผื่อชื่อ/รูปหาย
+        await setDoc(userDocRef, {
+          uid: cred.user.uid,
+          email: cred.user.email,
+          idnumber: idnumber,
+          displayName: cred.user.displayName || userData.displayName || "", 
+          photoURL: cred.user.photoURL || userData.photoURL || "",
+          memberType: role || "นักเรียน"
+        }, { merge: true });
+
+        // 🌐 Redirect ตาม role
+        if (role === "นักเรียน") {
+          window.location.href = "student.html";
+        } else if (role === "admin") {
+          window.location.href = "admin.html";
+        } else {
+          msg.style.color = "#d32f2f";
+          msg.textContent = "ไม่มีสิทธิ์เข้าใช้งาน";
+        }
+      } catch (err) {
+        msg.style.color = "#d32f2f";
+        msg.textContent = "เข้าสู่ระบบไม่สำเร็จ: เลขประจำตัวนักเรียนหรือรหัสผ่านไม่ถูกต้อง";
+      }
+    });
+  </script>
+</body>
+</html>

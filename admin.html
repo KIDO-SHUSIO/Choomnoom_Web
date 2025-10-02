@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin - จัดการระบบชุมนุม</title>
+  <link href="https://fonts.googleapis.com/css2?family=Itim&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0; font-family: 'Itim', cursive;
+      background: linear-gradient(135deg, #ACB6E5, #74ebd5);
+      min-height: 100vh; padding: 0;
+    }
+    .container {
+      max-width: 900px; margin: 40px auto; background: #fff;
+      border-radius: 18px; box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      padding: 32px 28px;
+    }
+    h1 { text-align: center; color: #333; margin-bottom: 32px; }
+    h2 { color: #1976D2; margin-top: 32px; }
+    table {
+      width: 100%; border-collapse: collapse; margin-top: 12px;
+      margin-bottom: 24px;
+    }
+    th, td {
+      border: 1px solid #ddd; padding: 10px; text-align: left;
+    }
+    th { background: #e3f2fd; }
+    tr:nth-child(even) { background: #f9f9f9; }
+    .actions button {
+      margin-right: 6px; padding: 6px 12px; border: none; border-radius: 6px;
+      background: #2196F3; color: #fff; cursor: pointer; font-size: 14px;
+    }
+    .actions button.delete { background: #e53935; }
+    .actions button.edit { background: #ffb300; color: #333; }
+    form { margin-top: 12px; }
+    label { display: block; margin-bottom: 6px; font-weight: bold; color: #555; }
+    input, select {
+      width: 100%; padding: 10px; border-radius: 8px;
+      border: 1px solid #ccc; margin-bottom: 14px;
+      font-family: 'Itim', cursive;
+    }
+    button[type="submit"] {
+      background: #388e3c; color: #fff; font-size: 16px;
+      border: none; border-radius: 8px; padding: 10px 0; width: 100%;
+      cursor: pointer;
+    }
+    button[type="submit"]:hover { background: #2e7031; }
+    .section {
+      overflow-x: auto;
+      width: 100%;
+    }
+    table {
+      min-width: 700px;
+      width: 100%;
+    }
+    .member-section {
+  max-height: 400px;  /* กำหนดความสูงที่ต้องการ */
+  overflow-y: auto;   /* เปิดสกอร์เลื่อนแนวตั้ง */
+  border: 1px solid #ddd;
+  border-radius: 10px;
+}
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- แถวบนสุด: Logo + Logout -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <img src="https://image2url.com/images/1759080347158-cdd8e5b6-c5ee-4ab0-aa72-6cff6d590868.png" 
+           alt="Club Logo" style="max-width:100px; border-radius:12px;" />
+
+      <!-- ปุ่มออกจากระบบ -->
+      <button id="logoutBtn" 
+        style="background:#e53935; color:#fff; border:none; padding:8px 16px; 
+               border-radius:8px; cursor:pointer; font-size:15px;">
+        ออกจากระบบ
+      </button>
+    </div>
+
+    <h1>แผงควบคุมผู้ดูแลระบบ</h1>
+
+    <div class="section">
+      <h2>จัดการสมาชิก</h2>
+      <div style="text-align:right; margin-bottom:12px;">
+  <button id="exportAllMembers" style="background:#1976D2; color:#fff; padding:8px 16px; border:none; border-radius:8px; cursor:pointer;">Export สมาชิกทั้งหมด</button>
+</div>
+<div class="member-section">
+      <table id="memberTable">
+        <thead>
+          <tr>
+            <th>ชื่อ-นามสกุล</th>
+            <th>เลขประจำตัว</th>
+            <th>อีเมล</th>
+            <th>สิทธิ์</th>
+            <th>การจัดการ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- ข้อมูลสมาชิกจะถูกโหลดที่นี่ -->
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <h2>เพิ่มชุมนุม</h2>
+      <form id="addClubForm">
+        <label for="clubname">ชื่อชุมนุม</label>
+        <input type="text" id="clubname" name="clubname" required />
+
+        <label for="clubdesc">รายละเอียดชุมนุม</label>
+        <input type="text" id="clubdesc" name="clubdesc" required />
+
+        <label for="clublimit">จำนวนสมาชิกสูงสุด</label>
+        <input type="number" id="clublimit" name="clublimit" min="1" required />
+
+        <button type="submit">เพิ่มชุมนุม</button>
+      </form>
+      <div id="clubMsg" style="margin-top:12px; color:#388e3c; text-align:center;"></div>
+    </div>
+
+    <div class="section">
+      <h2>จัดการชุมนุม</h2>
+      <div class="member-section"></div>
+      <table id="clubTable">
+        <thead>
+          <tr>
+            <th>ชื่อชุมนุม</th>
+            <th>รายละเอียด</th>
+            <th>จำนวนสมาชิก (ล่าสุด)</th>
+            <th>การจัดการ</th>
+            <th>สมาชิกที่สมัคร</th>
+            <th>Export</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- ข้อมูลชุมนุมจะถูกโหลดที่นี่ -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Modal แสดงสมาชิกที่สมัคร -->
+     
+    <div id="memberModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.25); z-index:100; justify-content:center; align-items:center;">
+      <div style="background:#fff; border-radius:14px; padding:32px 28px; min-width:320px; max-width:90vw; box-shadow:0 8px 32px rgba(0,0,0,0.18); position:relative;">
+        <button id="closeMemberModal" style="position:absolute; top:10px; right:16px; background:none; border:none; font-size:22px; color:#888; cursor:pointer;">&times;</button>
+        <h3 id="modalClubName"></h3>
+        <table style="width:100%; border-collapse:collapse; margin-top:12px;">
+          <thead>
+            <tr>
+              <th>ชื่อ-นามสกุล</th>
+              <th>เลขประจำตัว</th>
+              <th>ชั้น</th>
+              <th>เลขที่</th>
+              <th>วันที่สมัคร</th>
+            </tr>
+          </thead>
+          <tbody id="modalMemberList">
+            <div class="member-section"></div>
+            <!-- สมาชิกที่สมัครจะแสดงที่นี่ -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import * as XLSX from "https://cdn.sheetjs.com/xlsx-0.20.0/package/xlsx.mjs";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCmDBt1LJLWUEljGQVjYcaJ5FJRm9pcM_k",
+      authDomain: "wedappis.firebaseapp.com",
+      databaseURL: "https://wedappis-default-rtdb.firebaseio.com",
+      projectId: "wedappis",
+      storageBucket: "wedappis.appspot.com",
+      messagingSenderId: "838403173250",
+      appId: "1:838403173250:web:1f5fc5786c6c1104c4bd9b",
+      measurementId: "G-F73HSEZBBW"
+    };
+
+    // Init Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+
+    // เพิ่มชุมนุม
+    const addClubForm = document.getElementById("addClubForm");
+    const clubMsg = document.getElementById("clubMsg");
+    const clubTableBody = document.querySelector("#clubTable tbody");
+    const memberTableBody = document.querySelector("#memberTable tbody");
+
+    // Modal
+    const memberModal = document.getElementById("memberModal");
+    const closeMemberModal = document.getElementById("closeMemberModal");
+    const modalClubName = document.getElementById("modalClubName");
+    const modalMemberList = document.getElementById("modalMemberList");
+
+    closeMemberModal.onclick = () => memberModal.style.display = "none";
+    window.onclick = (e) => {
+      if (e.target === memberModal) memberModal.style.display = "none";
+    };
+
+    addClubForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      clubMsg.textContent = "";
+
+      const clubname = document.getElementById("clubname").value.trim();
+      const clubdesc = document.getElementById("clubdesc").value.trim();
+      const clublimit = parseInt(document.getElementById("clublimit").value);
+
+      try {
+        await addDoc(collection(db, "clubs"), {
+          clubdesc,
+          clublimit,
+          createdAt: new Date()
+        });
+        clubMsg.style.color = "#388e3c";
+        clubMsg.textContent = "เพิ่มชุมนุมสำเร็จ!";
+        addClubForm.reset();
+        loadClubs();
+      } catch (err) {
+        clubMsg.style.color = "#d32f2f";
+        clubMsg.textContent = "เกิดข้อผิดพลาด: " + err.message;
+      }
+    });
+// ออกจากระบบ
+import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+// Init Auth
+const auth = getAuth(app);
+
+// ปุ่มออกจากระบบ
+document.getElementById("logoutBtn").onclick = async () => {
+  try {
+    await signOut(auth);
+    alert("ออกจากระบบเรียบร้อยแล้ว");
+    window.location.href = "index.html"; // เปลี่ยนไปหน้าที่คุณต้องการ
+  } catch (error) {
+    alert("เกิดข้อผิดพลาด: " + error.message);
+  }
+};
+
+
+    // โหลดข้อมูลชุมนุม พร้อมจำนวนสมาชิกล่าสุด
+    async function loadClubs() {
+      clubTableBody.innerHTML = "";
+      const querySnapshot = await getDocs(collection(db, "clubs"));
+      for (const docSnap of querySnapshot.docs) {
+        const data = docSnap.data();
+        // นับจำนวนสมาชิกที่สมัครชุมนุมนี้
+        const regSnap = await getDocs(query(collection(db, "club_registers"), where("clubId", "==", docSnap.id)));
+        const memberCount = regSnap.size;
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${data.clubname}</td>
+          <td>${data.clubdesc}</td>
+          <td>${memberCount}/${data.clublimit}</td>
+          <td class="actions">
+            <button class="delete" data-id="${docSnap.id}">ลบ</button>
+          </td>
+          <td>
+            <button class="view-members" data-id="${docSnap.id}" data-name="${data.clubname}">ดูสมาชิก</button>
+          </td>
+          <td>
+            <button class="export-members" data-id="${docSnap.id}" data-name="${data.clubname}">Export</button>
+          </td>
+        `;
+        // ลบชุมนุม
+        tr.querySelector(".delete").onclick = async () => {
+          if (confirm("ต้องการลบชุมนุมนี้ใช่หรือไม่?")) {
+            await deleteDoc(doc(db, "clubs", docSnap.id));
+            loadClubs();
+          }
+        };
+        // ดูสมาชิก
+        tr.querySelector(".view-members").onclick = () => showClubMembers(docSnap.id, data.clubname);
+        // Export Excel
+        tr.querySelector(".export-members").onclick = () => exportClubMembers(docSnap.id, data.clubname);
+        clubTableBody.appendChild(tr);
+      }
+    }
+
+    // โหลดข้อมูลสมาชิก
+    async function loadMembers() {
+      memberTableBody.innerHTML = "";
+      const querySnapshot = await getDocs(collection(db, "users"));
+      querySnapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${data.fullname || ""}</td>
+          <td>${data.idnumber || ""}</td>
+          <td>${data.email || ""}</td>
+          <td>${data.memberType || ""}</td>
+          <td class="actions">
+            <button class="delete" data-id="${docSnap.id}">ลบ</button>
+          </td>
+        `;
+        tr.querySelector(".delete").onclick = async () => {
+          if (confirm("ต้องการลบสมาชิกนี้ใช่หรือไม่?")) {
+            await deleteDoc(doc(db, "users", docSnap.id));
+            loadMembers();
+          }
+        };
+        memberTableBody.appendChild(tr);
+      });
+    }
+
+    // ดูสมาชิกที่สมัครชุมนุม
+    async function showClubMembers(clubId, clubName) {
+      modalClubName.textContent = `สมาชิกที่สมัคร: ${clubName}`;
+      modalMemberList.innerHTML = "<tr><td colspan='5'>กำลังโหลด...</td></tr>";
+      memberModal.style.display = "flex";
+      const q = query(collection(db, "club_registers"), where("clubId", "==", clubId));
+      const snap = await getDocs(q);
+      if (snap.empty) {
+        modalMemberList.innerHTML = "<tr><td colspan='5'>ยังไม่มีสมาชิกสมัคร</td></tr>";
+        return;
+      }
+      modalMemberList.innerHTML = "";
+      snap.forEach(docSnap => {
+        const d = docSnap.data();
+        const date = d.createdAt && d.createdAt.toDate ? d.createdAt.toDate().toLocaleString() : (d.createdAt?.seconds ? new Date(d.createdAt.seconds * 1000).toLocaleString() : "");
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${d.fullname || ""}</td>
+          <td>${d.idnumber || ""}</td>
+          <td>${d.class || ""}</td>
+          <td>${d.number || ""}</td>
+          <td>${date}</td>
+        `;
+        modalMemberList.appendChild(tr);
+      });
+    }
+
+    // Export สมาชิกชุมนุมเป็น Excel
+    async function exportClubMembers(clubId, clubName) {
+      const q = query(collection(db, "club_registers"), where("clubId", "==", clubId));
+      const snap = await getDocs(q);
+      if (snap.empty) {
+        alert("ยังไม่มีสมาชิกสมัครชุมนุมนี้");
+        return;
+      }
+      const data = [];
+      snap.forEach(docSnap => {
+        const d = docSnap.data();
+        const date = d.createdAt && d.createdAt.toDate ? d.createdAt.toDate().toLocaleString() : (d.createdAt?.seconds ? new Date(d.createdAt.seconds * 1000).toLocaleString() : "");
+        data.push({
+          "ชื่อ-นามสกุล": d.fullname || "",
+          "เลขประจำตัว": d.idnumber || "",
+          "ชั้น": d.class || "",
+          "เลขที่": d.number || "",
+          "วันที่สมัคร": date
+        });
+      });
+      const ws = XLSX.utils.json_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Members");
+      XLSX.writeFile(wb, `สมาชิก_${clubName}.xlsx`);
+    }
+    document.getElementById("exportAllMembers").onclick = async () => {
+  const querySnapshot = await getDocs(collection(db, "users"));
+  if (querySnapshot.empty) {
+    alert("ยังไม่มีสมาชิกในระบบ");
+    return;
+  }
+  const data = [];
+  querySnapshot.forEach(docSnap => {
+    const d = docSnap.data();
+    data.push({
+      "ชื่อ-นามสกุล": d.fullname || "",
+      "เลขประจำตัว": d.idnumber || "",
+      "อีเมล": d.email || "",
+      "สิทธิ์": d.memberType || ""
+    });
+  });
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "สมาชิกทั้งหมด");
+  XLSX.writeFile(wb, `สมาชิกทั้งหมด.xlsx`);
+};
+
+
+    // โหลดข้อมูลเมื่อเปิดหน้า
+    loadClubs();
+    loadMembers();
+  </script>
+</body>
+</html>

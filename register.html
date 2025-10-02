@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>สมัครสมาชิกชุมนุม</title>
+  <link href="https://fonts.googleapis.com/css2?family=Itim&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0; font-family: 'Itim', cursive;
+      background: linear-gradient(135deg, #ACB6E5, #74ebd5);
+      display: flex; justify-content: center; align-items: center;
+      min-height: 100vh; padding: 20px;
+    }
+    .container {
+      background: #fff; padding: 30px 40px; border-radius: 18px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      max-width: 440px; width: 100%;
+    }
+    h1 { text-align: center; color: #333; margin-bottom: 24px; }
+    label { display: block; margin-bottom: 6px; font-weight: bold; color: #555; }
+    input {
+      width: 100%; padding: 12px; border-radius: 10px;
+      border: 1px solid #ccc; margin-bottom: 16px;
+      font-family: 'Itim', cursive;
+    }
+    button {
+      width: 100%; padding: 14px; border: none; border-radius: 10px;
+      background: #2196F3; color: white; font-size: 16px; cursor: pointer;
+      margin-bottom: 10px;
+    }
+    button:hover { background: #1976D2; }
+  </style>
+</head>
+<body>
+  <div class="container">
+  <div style="text-align:center; margin-bottom:20px;">
+    <img src="https://image2url.com/images/1759080347158-cdd8e5b6-c5ee-4ab0-aa72-6cff6d590868.png" alt="Club Logo" style="max-width:120px; border-radius:12px;" />
+  </div>
+    <h1>สมัครสมาชิกชุมนุม</h1>
+    <form id="registerForm">
+      <label for="fullname">ชื่อ-นามสกุล</label>
+      <input type="text" id="fullname" name="fullname" required />
+
+      <label for="idnumber">เลขประจำตัวนักเรียน</label>
+      <input type="text" id="idnumber" name="idnumber" required />
+
+      <label for="gmail">Gmail</label>
+      <input type="email" id="gmail" name="gmail" pattern=".+@gmail\.com" placeholder="yourname@gmail.com" required />
+
+      <label for="password">รหัสผ่าน</label>
+      <input type="password" id="password" name="password" required minlength="6" />
+
+      <label for="confirmpassword">ยืนยันรหัสผ่าน</label>
+      <input type="password" id="confirmpassword" name="confirmpassword" required minlength="6" />
+
+      <button type="submit">สมัครสมาชิก</button>
+    </form>
+    <div style="text-align:center; margin-top:16px;">
+      <a href="index.html" style="color:#2196F3; text-decoration:underline; font-size:16px;">
+        เข้าสู่ระบบ
+      </a>
+    </div>
+    <div id="msg" style="margin-top:16px; text-align:center; color:#d32f2f;"></div>
+  </div>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, setDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCmDBt1LJLWUEljGQVjYcaJ5FJRm9pcM_k",
+      authDomain: "wedappis.firebaseapp.com",
+      databaseURL: "https://wedappis-default-rtdb.firebaseio.com",
+      projectId: "wedappis",
+      storageBucket: "wedappis.appspot.com",
+      messagingSenderId: "838403173250",
+      appId: "1:838403173250:web:1f5fc5786c6c1104c4bd9b",
+      measurementId: "G-F73HSEZBBW"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const form = document.getElementById("registerForm");
+    const msg = document.getElementById("msg");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      msg.textContent = "";
+
+      const fullname = document.getElementById("fullname").value.trim();
+      const idnumber = document.getElementById("idnumber").value.trim();
+      const gmail = document.getElementById("gmail").value.trim();
+      const password = document.getElementById("password").value;
+      const confirmpassword = document.getElementById("confirmpassword").value;
+
+      if (password !== confirmpassword) {
+        msg.style.color = "#d32f2f";
+        msg.textContent = "รหัสผ่านไม่ตรงกัน";
+        return;
+      }
+
+      try {
+        // สมัครสมาชิกด้วยอีเมลและรหัสผ่าน
+        const cred = await createUserWithEmailAndPassword(auth, gmail, password);
+
+        // บันทึกข้อมูลสมาชิกใน Firestore พร้อม role = นักเรียน
+        await setDoc(doc(db, "users", cred.user.uid), {
+  fullname,
+  idnumber,
+  email: gmail,
+  memberType: "นักเรียน",
+  photoURL: "https://via.placeholder.com/120",  // << เพิ่มค่าเริ่มต้น
+  createdAt: new Date()
+});
+
+
+        msg.style.color = "#388e3c";
+        msg.textContent = "สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ";
+        form.reset();
+        setTimeout(() => {
+  window.location.href = "index.html";
+}, 2000);
+
+      } catch (err) {
+        msg.style.color = "#d32f2f";
+        msg.textContent = err.message;
+      }
+    });
+  </script>
+</body>
+</html>
