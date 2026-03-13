@@ -1,306 +1,1252 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>สมัครชุมนุม</title>
-<link href="https://fonts.googleapis.com/css2?family=Itim&display=swap" rel="stylesheet">
-<style>
-body { margin:0; font-family:'Itim', cursive; background:linear-gradient(135deg,#ACB6E5,#74ebd5); min-height:100vh; }
+<!doctype html>
+<html lang="th" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบสมัครชุมนุม</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <!-- Firestore instead of Realtime Database -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&amp;family=Prompt:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    body {
+      box-sizing: border-box;
+      font-family: 'Prompt', 'Noto Sans Thai', sans-serif;
+    }
+    .gradient-bg {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    .card-hover {
+      transition: all 0.3s ease;
+    }
+    .card-hover:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    }
+    .category-badge {
+      transition: all 0.2s ease;
+    }
+    .category-badge:hover {
+      transform: scale(1.05);
+    }
+    .fade-in {
+      animation: fadeIn 0.5s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .slide-in {
+      animation: slideIn 0.3s ease-out;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    .decorative-bg {
+      position: relative;
+      background: linear-gradient(135deg, #f0f4ff 0%, #fff9e6 100%);
+    }
+    .decorative-bg::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: 
+        radial-gradient(circle at 20% 30%, rgba(36, 72, 235, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(250, 204, 21, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(36, 72, 235, 0.05) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .decorative-bg::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: 
+        linear-gradient(45deg, rgba(36, 72, 235, 0.03) 25%, transparent 25%),
+        linear-gradient(-45deg, rgba(250, 204, 21, 0.03) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, rgba(36, 72, 235, 0.03) 75%),
+        linear-gradient(-45deg, transparent 75%, rgba(250, 204, 21, 0.03) 75%);
+      background-size: 80px 80px;
+      background-position: 0 0, 0 40px, 40px -40px, -40px 0px;
+      pointer-events: none;
+    }
 
-/* ===== Header ===== */
-header {
-  position: relative;
-  background: #1976D2;
-  color: white;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 20px;
-  box-shadow: 0 0 20px rgba(0,0,0,0.4);
-  z-index: 1;
-}
+    /* Mobile Responsive Styles */
+    @media (max-width: 768px) {
+      main {
+        padding: 1rem !important;
+      }
+      header {
+        position: sticky;
+      }
+      .max-w-7xl {
+        width: 100%;
+      }
+      h1 {
+        font-size: 1.2rem !important;
+      }
+      h2 {
+        font-size: 1.1rem !important;
+      }
+      h3 {
+        font-size: 1rem !important;
+      }
+      button {
+        font-size: 0.9rem !important;
+      }
+      .px-4 {
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+      }
+    }
 
-/* ===== สมัครชุมนุม ===== */
-header h1 { margin:0; font-size:30px; z-index:1; }
-
-.user-area { display:flex; align-items:center; gap:8px; position: relative; z-index:2; }
-#userPhoto { width:40px; height:40px; border-radius:50%; background:#fff; overflow:hidden; display:flex; align-items:center; justify-content:center; font-weight:bold; color:#1976D2; }
-#userPhoto img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
-#userName { padding:4px 8px; background:#fff; color:#1976D2; border-radius:6px; font-weight:bold; }
-
-/* ===== Hamburger Menu ===== */
-#menuBtn { width:30px; height:25px; display:flex; flex-direction:column; justify-content:space-between; cursor:pointer; position: relative; z-index:3; }
-#menuBtn span { display:block; height:4px; background:white; border-radius:2px; transition: all 0.4s ease; position:relative; overflow:hidden; }
-#menuBtn.active span:nth-child(1){ transform: rotate(45deg) translateY(10px); }
-#menuBtn.active span:nth-child(2){ opacity:0; }
-#menuBtn.active span:nth-child(3){ transform: rotate(-45deg) translateY(-10px); }
-#menuBtn:hover span{ transform:scaleX(1.2); }
-
-/* ===== User Menu (Smooth) ===== */
-#userMenu {
-  position:absolute;
-  top:50px;
-  right:0;
-  background:#fff;
-  color:#1976D2;
-  border-radius:8px;
-  box-shadow:0 4px 12px rgba(0,0,0,0.2);
-  min-width:140px;
-  overflow:hidden;
-  z-index:1000;
-
-  opacity:0;
-  visibility:hidden;
-  transform:translateY(-10px);
-  transition:all 0.3s ease;
-}
-#userMenu.show {
-  opacity:1;
-  visibility:visible;
-  transform:translateY(0);
-}
-#userMenu div { padding:10px; cursor:pointer; }
-#menuUserName { font-weight:bold; border-bottom:1px dashed #ccc; }
-#menuProfile { border-bottom:1px dashed #ccc; }
-#menuLogout { color:#d32f2f; }
-#userMenu div:hover { background:#eee; }
-
-/* ===== Container ===== */
-.container { max-width:900px; margin:40px auto; background:#fff; border-radius:18px; box-shadow:0 8px 24px rgba(0,0,0,0.12); padding:32px 28px; }
-h2 { text-align:center; color:#333; margin-bottom:32px; }
-.club-list { display:flex; flex-wrap:wrap; gap:24px; justify-content:center; }
-.club-card { background:#f9f9f9; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.07); padding:24px 18px; width:270px; display:flex; flex-direction:column; align-items:flex-start; transition: transform 0.2s, box-shadow 0.2s; }
-.club-card:hover { transform:translateY(-6px); box-shadow:0 6px 16px rgba(0,0,0,0.15); }
-.club-card h2 { margin:0 0 8px 0; color:#1976D2; font-size:22px; }
-.club-card p { margin:0 0 8px 0; color:#444; }
-.club-card .limit { color:#888; font-size:15px; margin-bottom:12px; }
-.club-card button { background:#2196F3; color:#fff; border:none; border-radius:8px; padding:10px 0; width:100%; font-size:16px; cursor:pointer; margin-top:8px; }
-.club-card button:hover { background:#1976D2; }
-
-/* ===== Popup (Smooth) ===== */
-.popup-bg {
-  position:fixed;
-  top:0; left:0;
-  width:100vw; height:100vh;
-  background:rgba(0,0,0,0.25);
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  z-index:2000;
-
-  opacity:0;
-  visibility:hidden;
-  transition:opacity 0.3s ease;
-}
-.popup-bg.show {
-  opacity:1;
-  visibility:visible;
-}
-.popup {
-  background:#fff;
-  border-radius:14px;
-  padding:32px 28px;
-  min-width:320px;
-  max-width:90vw;
-  box-shadow:0 8px 32px rgba(0,0,0,0.18);
-  position:relative;
-  transform:scale(0.9);
-  transition:transform 0.3s ease;
-}
-.popup-bg.show .popup { transform:scale(1); }
-
-.popup h2 { margin-top:0; }
-.popup label { display:block; margin-bottom:6px; font-weight:bold; color:#555; }
-.popup input { width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; margin-bottom:14px; font-family:'Itim', cursive; }
-.popup button[type="submit"] { background:#388e3c; color:#fff; font-size:16px; border:none; border-radius:8px; padding:10px 0; width:100%; cursor:pointer; }
-.popup button[type="submit"]:hover { background:#2e7031; }
-.popup .close-btn { position:absolute; top:10px; right:16px; background:none; border:none; font-size:22px; color:#888; cursor:pointer; }
-#popupMsg { margin-top:10px; text-align:center; }
-#progressBar { display:none; height:6px; background:#ccc; border-radius:3px; margin-top:10px; }
-#progressFill { height:100%; width:0; background:#4caf50; border-radius:3px; }
-</style>
-</head>
-<body>
-
-<header>
-  <h1>สมัครชุมนุม</h1>
-  <div class="user-area">
-    <div id="userPhoto"></div>
-    <div id="userName">user</div>
-    <div id="menuBtn">
-      <span></span><span></span><span></span>
+    @media (max-width: 480px) {
+      body {
+        font-size: 0.9rem;
+      }
+      main {
+        padding: 0.5rem !important;
+      }
+      .py-4 {
+        padding-top: 0.75rem !important;
+        padding-bottom: 0.75rem !important;
+      }
+      .gap-3 {
+        gap: 0.5rem !important;
+      }
+      .gap-6 {
+        gap: 0.75rem !important;
+      }
+      .p-8 {
+        padding: 1rem !important;
+      }
+      .p-5 {
+        padding: 0.75rem !important;
+      }
+      .flex.items-center.gap-2 {
+        font-size: 0.8rem;
+      }
+      h1 {
+        font-size: 1rem !important;
+      }
+      h2 {
+        font-size: 0.9rem !important;
+      }
+      button {
+        padding: 0.5rem 0.75rem !important;
+        font-size: 0.8rem !important;
+      }
+      .w-16 {
+        width: 3rem !important;
+        height: 3rem !important;
+      }
+      .text-2xl {
+        font-size: 1.25rem !important;
+      }
+      .text-lg {
+        font-size: 0.95rem !important;
+      }
+    }
+  </style>
+  <style>
+    /* Skip link visible on focus for accessibility */
+    .skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; }
+    .skip-link:focus { position: static; width: auto; height: auto; left: 0; background: white; padding: 8px 12px; z-index: 50; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+ </head>
+ <body class="h-full bg-gray-50">
+  <a href="#club-grid" class="skip-link">ข้ามไปยังรายการชุมนุม</a>
+  <div id="app" class="h-full overflow-auto"><!-- Main Dashboard -->
+   <div id="main-page" class="min-h-full decorative-bg"><!-- Header -->
+    <header class="shadow-sm sticky top-0 z-50" style="background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);">
+     <div class="max-w-7xl mx-auto px-4 py-4">
+      <div class="flex items-center justify-between">
+       <div class="flex items-center gap-3">
+       <div class="w-16 h-16 rounded-xl flex items-center justify-center overflow-hidden">
+         <img src="club-logo.png" alt="Logo" class="w-full h-full object-cover">
+        </div>
+        <h1 id="page-title" class="text-xl font-bold text-white">ระบบสมัครชุมนุม</h1>
+       </div>
+       <div class="flex items-center gap-3">
+        <button onclick="showProfile()" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-white bg-opacity-25 text-white hover:bg-opacity-35 transition-all">
+          <div id="user-avatar" class="w-8 h-8 rounded-full overflow-hidden bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center"><img id="user-avatar-img" src="" alt="" class="w-full h-full object-cover" style="display:none;" onerror="this.style.display='none';"> <span id="user-avatar-text" class="text-white text-sm font-bold">👤</span>
+          </div><span id="user-name-header" class="text-white font-medium">โปรไฟล์</span> 
+        </button>
+        <button onclick="logout()" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold transition-colors">🚪 ออก</button>
+       </div>
+      </div>
+     </div>
+    </header><!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-8 relative z-10"><!-- Welcome Section -->
+    <div class="rounded-3xl p-8 mb-8 text-white fade-in shadow-md" style="background: linear-gradient(135deg, #2448eb 0%, #1f3aa6 50%, #f59e0b 100%);">
+     <h2 id="welcome-text" class="text-2xl font-bold mb-2" style="text-shadow: 0 1px 2px rgba(0,0,0,0.45);">เลือกชุมนุมที่คุณสนใจ</h2>
+     <p class="text-white/90" style="text-shadow: 0 1px 2px rgba(0,0,0,0.35);">ค้นหาชุมนุมจากหมวดหมู่กลุ่มสาระต่างๆ</p>
+    </div><!-- Search Bar -->
+    <!-- Announcement (from settings) -->
+    <div id="system-announcement" class="mb-6 hidden" role="region" aria-live="polite">
+      <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-lg">
+        <p id="system-announcement-text" class="text-yellow-800 text-sm"></p>
+      </div>
     </div>
-    <div id="userMenu">
-      <div id="menuUserName">user</div>
-      <div id="menuProfile">โปรไฟล์</div>
-      <div id="menuLogout">ออกจากระบบ</div>
+
+    <!-- Registration countdown / status -->
+    <div id="registration-countdown" class="mb-4 hidden" role="status" aria-live="polite">
+      <div class="bg-blue-50 border-l-4 border-blue-400 p-3 rounded-lg">
+        <p id="registration-countdown-text" class="text-blue-700 text-sm font-medium"></p>
+      </div>
     </div>
+     <div class="mb-8">
+      <div class="relative"><input type="text" id="search-input" aria-label="ค้นหาชุมนุม" oninput="handleSearch()" class="w-full px-6 py-4 pl-14 rounded-2xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none text-lg" placeholder="🔍 ค้นหาชุมนุม...">
+       <svg class="w-6 h-6 text-gray-400 absolute left-5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+       </svg>
+      </div>
+     </div><!-- Category Filter -->
+     <div class="mb-8">
+      <h3 class="text-lg font-semibold text-gray-800 mb-4">หมวดหมู่กลุ่มสาระ</h3>
+      <div class="flex flex-wrap gap-3" id="category-filters"><button onclick="filterByCategory('all')" class="category-badge px-5 py-2 rounded-full text-white font-medium shadow-lg" style="background: linear-gradient(135deg, #2448eb 0%, #facc15 100%);" data-category="all"> ทั้งหมด </button> <button onclick="filterByCategory('คณิต')" class="category-badge px-5 py-2 rounded-full bg-gray-100 text-gray-700 font-medium hover:bg-gray-200" data-category="คณิต"> 🔢 คณิตศาสตร์ </button> <button onclick="filterByCategory('วิทย์')" class="category-badge px-5 py-2 rounded-full bg-gray-100 text-gray-700 font-medium hover:bg-gray-200" data-category="วิทย์"> 🔬 วิทยาศาสตร์ </button> <button onclick="filterByCategory('ภาษา')" class="category-badge px-5 py-2 rounded-full bg-gray-100 text-gray-700 font-medium hover:bg-gray-200" data-category="ภาษา"> 🗣️ ภาษา </button> <button onclick="filterByCategory('สังคม')" class="category-badge px-5 py-2 rounded-full bg-gray-100 text-gray-700 font-medium hover:bg-gray-200" data-category="สังคม"> 🌍 สังคมศึกษา </button> <button onclick="filterByCategory('พละ')" class="category-badge px-5 py-2 rounded-full bg-gray-100 text-gray-700 font-medium hover:bg-gray-200" data-category="พละ"> ⚽ พละและสุขศึกษา </button> <button onclick="filterByCategory('ศิลปะ&ดนตรี')" class="category-badge px-5 py-2 rounded-full bg-gray-100 text-gray-700 font-medium hover:bg-gray-200" data-category="ศิลปะ&ดนตรี"> 🎨 ศิลปะ&ดนตรี </button> <button onclick="filterByCategory('อื่นๆ')" class="category-badge px-5 py-2 rounded-full bg-gray-100 text-gray-700 font-medium hover:bg-gray-200" data-category="อื่นๆ"> 💫 อื่นๆ </button>
+      </div>
+     </div><!-- Club Grid -->
+     <div id="club-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"><!-- Clubs will be rendered here -->
+     </div><!-- No Results -->
+     <div id="no-results" class="hidden text-center py-12">
+      <p class="text-6xl mb-4">🔍</p>
+      <h3 class="text-xl font-semibold text-gray-700">ไม่พบชุมนุมที่ค้นหา</h3>
+      <p class="text-gray-500 mt-2">ลองค้นหาด้วยคำอื่น หรือเลือกหมวดหมู่อื่น</p>
+     </div><!-- Footer -->
+     <div class="text-center mt-12 pb-8">
+      <p id="footer-text" class="text-gray-500">ติดต่อครูที่ปรึกษาหากมีข้อสงสัย</p>
+     </div>
+    </main>
+   </div><!-- Profile Modal -->
+   <div id="profile-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeProfile()"></div>
+    <div class="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md relative z-10 fade-in max-h-[90%] overflow-y-auto"><button onclick="closeProfile()" class="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 transition-all">
+      <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+      </svg></button>
+     <div class="text-center mb-6">
+      <div class="w-24 h-24 rounded-full mx-auto mb-4 overflow-hidden bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity relative" id="profile-avatar-display" onclick="document.getElementById('avatar-input').click();" title="คลิกเพื่อเปลี่ยนรูป"><img id="profile-avatar-img" src="" alt="" class="w-full h-full object-cover" style="display:none;" onerror="this.style.display='none';"> <span id="profile-avatar-text" class="text-white text-4xl font-bold">👤</span>
+        <div class="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 hover:opacity-100 transition-opacity rounded-full">
+          <span class="text-white text-sm font-medium">📷</span>
+        </div>
+      </div>
+      <input type="file" id="avatar-input" accept="image/*" class="hidden" onchange="changeProfilePicture()">
+      <p class="text-gray-500 text-xs">คลิกเพื่อเปลี่ยนรูป</p>
+      <h2 class="text-2xl font-bold text-gray-800 mt-2">โปรไฟล์ของฉัน</h2>
+     </div>
+     <!-- Tab Buttons -->
+     <div class="flex gap-2 mb-6 border-b border-gray-200">
+      <button onclick="showProfileTab('info')" class="profile-tab-btn px-4 py-3 font-medium text-gray-700 border-b-2 border-transparent hover:text-blue-600" data-tab="info" style="border-bottom-color: #3b82f6; color: #3b82f6;">📋 ข้อมูลส่วนตัว</button>
+      <button onclick="showProfileTab('password')" class="profile-tab-btn px-4 py-3 font-medium text-gray-700 border-b-2 border-transparent hover:text-blue-600" data-tab="password">🔐 เปลี่ยนรหัสผ่าน</button>
+     </div>
+     <!-- Info Tab -->
+     <div id="profile-info-tab">
+      <div class="space-y-4">
+       <div class="bg-gray-50 rounded-xl p-4"><label class="block text-gray-700 text-sm font-medium mb-2">รหัสนักเรียน</label>
+        <p id="profile-student-id" class="text-gray-900 font-medium">-</p>
+       </div>
+       <div class="bg-gray-50 rounded-xl p-4"><label class="block text-gray-700 text-sm font-medium mb-2">ชื่อ-นามสกุล</label>
+        <p id="profile-student-name" class="text-gray-900 font-medium">-</p>
+       </div>
+       <div class="bg-gray-50 rounded-xl p-4"><label class="block text-gray-700 text-sm font-medium mb-2">ชั้นเรียน</label>
+        <p id="profile-student-class" class="text-gray-900 font-medium">-</p>
+       </div>
+      <div class="bg-gray-50 rounded-xl p-4"><label class="block text-gray-700 text-sm font-medium mb-2">เลขที่</label>
+        <p id="profile-student-number" class="text-gray-900 font-medium">-</p>
+       </div>
+       <div class="bg-gradient-to-r from-blue-50 to-yellow-50 border-2 border-blue-200 rounded-xl p-4"><label class="block text-blue-700 text-sm font-medium mb-3 flex items-center gap-2">
+         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+         </svg> ชุมนุมที่สมัคร </label>
+        <div id="profile-club-info">
+         <p class="text-gray-500 text-sm">ยังไม่ได้สมัครชุมนุม</p>
+        </div>
+       </div>
+      </div>
+     </div>
+     <!-- Password Tab -->
+     <div id="profile-password-tab" class="hidden">
+      <div class="space-y-4">
+       <div class="bg-gray-50 rounded-xl p-4">
+        <label class="block text-gray-700 text-sm font-medium mb-2">รหัสผ่านเก่า</label>
+        <input type="password" id="old-password" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none" placeholder="กรุณากรอกรหัสผ่านเก่า">
+       </div>
+       <div class="bg-gray-50 rounded-xl p-4">
+        <label class="block text-gray-700 text-sm font-medium mb-2">รหัสผ่านใหม่</label>
+        <input type="password" id="new-password" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none" placeholder="กรุณากรอกรหัสผ่านใหม่">
+       </div>
+       <div class="bg-gray-50 rounded-xl p-4">
+        <label class="block text-gray-700 text-sm font-medium mb-2">ยืนยันรหัสผ่านใหม่</label>
+        <input type="password" id="confirm-password" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none" placeholder="ยืนยันรหัสผ่านใหม่">
+       </div>
+       <button onclick="changePassword()" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-xl font-medium transition-all mt-4">
+        💾 บันทึกรหัสผ่านใหม่
+       </button>
+      </div>
+     </div>
+    </div>
+   </div><!-- Club Detail Modal -->
+   <div id="club-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeClubModal()"></div>
+    <div class="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-lg relative z-10 fade-in max-h-[90%] overflow-y-auto"><button onclick="closeClubModal()" class="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 transition-all">
+      <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+      </svg></button>
+     <div id="club-modal-content"><!-- Club details will be rendered here -->
+     </div>
+    </div>
+   </div><!-- Toast Notification -->
+   <div id="toast" class="hidden fixed bottom-4 right-4 z-50 bg-green-500 text-white px-6 py-4 rounded-xl shadow-lg slide-in">
+    <div class="flex items-center gap-3">
+     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+     </svg><span id="toast-message"></span>
+    </div>
+   </div>
   </div>
-</header>
 
-<div class="container">
-  <div style="text-align:center; margin-bottom:20px;">
-    <img src="https://image2url.com/images/1759080347158-cdd8e5b6-c5ee-4ab0-aa72-6cff6d590868.png" alt="Club Logo" style="max-width:120px; border-radius:12px;" />
-  </div>
-  <h2>เลือกชุมนุม</h2>
-  <div class="club-list" id="clubList">กำลังโหลด...</div>
-  <div id="msg"></div>
-</div>
+  <script>
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyCmDBt1LJLWUEljGQVjYcaJ5FJRm9pcM_k",
+      authDomain: "wedappis.firebaseapp.com",
+      // databaseURL removed – Firestore only
+      projectId: "wedappis",
+      storageBucket: "wedappis.firebasestorage.app",
+      messagingSenderId: "838403173250",
+      appId: "1:838403173250:web:1f5fc5786c6c1104c4bd9b",
+      measurementId: "G-F73HSEZBBW"
+    };
 
-<!-- Popup -->
-<div class="popup-bg" id="popupBg">
-  <div class="popup">
-    <button class="close-btn" id="closePopup">&times;</button>
-    <h2 id="popupClubName"></h2>
-    <form id="registerForm">
-      <label for="class">ชั้น</label>
-      <input type="text" id="class" name="class" placeholder="เช่น ม.3/2" required />
-      <label for="number">เลขที่</label>
-      <input type="text" id="number" name="number" placeholder="เช่น 15" required />
-      <button type="submit">ยืนยันสมัคร</button>
-    </form>
-    <div id="popupMsg"></div>
-    <div id="progressBar"><div id="progressFill"></div></div>
-  </div>
-</div>
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    // using Firestore for data operations
+    const db = firebase.firestore();
 
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, getDocs, addDoc, doc, getDoc, query, where, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    let currentUser = null;
+    let clubs = [];
+    let registrations = [];
+    let currentCategory = 'all';
+    let searchQuery = '';
 
-const firebaseConfig={apiKey:"AIzaSyCmDBt1LJLWUEljGQVjYcaJ5FJRm9pcM_k",authDomain:"wedappis.firebaseapp.com",projectId:"wedappis",storageBucket:"wedappis.appspot.com",messagingSenderId:"838403173250",appId:"1:838403173250:web:1f5fc5786c6c1104c4bd9b"};
-const app=initializeApp(firebaseConfig);
-const db=getFirestore(app);
-const auth=getAuth(app);
+    // Category colors
+    const categoryColors = {
+      'คณิต': 'from-orange-500 to-orange-600',
+      'วิทย์': 'from-green-500 to-green-600',
+      'ภาษา': 'from-red-500 to-red-600',
+      'สังคม': 'from-yellow-500 to-yellow-600',
+      'พละ': 'from-teal-500 to-teal-600',
+      'ศิลปะ&ดนตรี': 'from-pink-500 to-pink-600',
+      'อื่นๆ': 'from-purple-500 to-purple-600'
+    };
 
-const clubListDiv=document.getElementById("clubList");
-let clubs=[];
+    // Initialize
+    auth.onAuthStateChanged((user) => {
+      if (!user) {
+        window.location.href = 'index.html';
+        return;
+      }
 
-async function loadClubs(){
-  clubListDiv.innerHTML="กำลังโหลด...";
-  clubs=[];
-  const querySnapshot=await getDocs(collection(db,"clubs"));
-  clubListDiv.innerHTML="";
-  querySnapshot.forEach(docSnap=>{
-    const data=docSnap.data();
-    clubs.push({id:docSnap.id,...data});
-    const card=document.createElement("div");
-    card.className="club-card";
-    card.innerHTML=`<h2>${data.clubname}</h2><p>${data.clubdesc}</p><div class="limit">สมาชิก: ${data.currentCount||0}/${data.clublimit}</div><button data-id="${docSnap.id}">สมัคร</button>`;
-    card.querySelector("button").onclick=()=>openPopup(docSnap.id);
-    clubListDiv.appendChild(card);
-  });
-  if(clubs.length===0) clubListDiv.innerHTML="<div>ยังไม่มีชุมนุมในระบบ</div>";
-}
-
-onAuthStateChanged(auth, async(user)=>{
-  if(!user){ alert("กรุณาเข้าสู่ระบบ"); window.location.href="index.html"; return; }
-  const userSnap=await getDoc(doc(db,"users",user.uid));
-  if(!userSnap.exists()){ alert("ไม่พบบัญชี"); window.location.href="index.html"; return; }
-  const data=userSnap.data();
-  if(data.memberType!=="นักเรียน"){ alert("คุณไม่มีสิทธิ์เข้าหน้านี้"); window.location.href="index.html"; return; }
-  const displayName=data.fullname||data.displayName||user.displayName||"user";
-  const photoURL=data.photoURL||user.photoURL||null;
-  document.getElementById("userName").textContent=displayName;
-  document.getElementById("menuUserName").textContent=displayName;
-  if(photoURL) document.getElementById("userPhoto").innerHTML=`<img src="${photoURL}" alt="User Photo"/>`;
-  else document.getElementById("userPhoto").textContent=displayName.charAt(0).toUpperCase();
-  loadClubs();
-});
-
-// Menu
-const menuBtn=document.getElementById("menuBtn");
-const userMenu=document.getElementById("userMenu");
-const userArea=document.querySelector(".user-area");
-
-// toggle menu
-menuBtn.addEventListener("click",()=>{
-  const popupVisible = popupBg.classList.contains("show");
-  if(popupVisible) return;
-  menuBtn.classList.toggle("active");
-  userMenu.classList.toggle("show");
-});
-
-document.getElementById("menuProfile").onclick=()=>window.location.href="profile.html";
-document.getElementById("menuLogout").onclick=()=>signOut(auth).then(()=>window.location.href="index.html");
-
-window.addEventListener("click",(e)=>{
-  if(!userArea.contains(e.target)){
-    userMenu.classList.remove("show");
-    menuBtn.classList.remove("active");
-  }
-});
-
-// Popup
-const popupBg=document.getElementById("popupBg");
-const closePopupBtn=document.getElementById("closePopup");
-const popupClubName=document.getElementById("popupClubName");
-const registerForm=document.getElementById("registerForm");
-const popupMsg=document.getElementById("popupMsg");
-let currentClubId=null;
-
-function openPopup(clubId){
-  const club=clubs.find(c=>c.id===clubId);
-  if(!club) return;
-  popupClubName.textContent=club.clubname;
-  currentClubId=clubId;
-  registerForm.reset();
-  popupMsg.textContent="";
-  document.getElementById("progressBar").style.display="none";
-  document.getElementById("progressFill").style.width="0";
-  popupBg.classList.add("show");
-}
-closePopupBtn.onclick=()=>popupBg.classList.remove("show");
-window.addEventListener("click",(e)=>{ if(e.target===popupBg) popupBg.classList.remove("show"); });
-
-// Progress & confetti
-function showProgress(){
-  const fill=document.getElementById("progressFill");
-  const bar=document.getElementById("progressBar");
-  bar.style.display="block"; fill.style.width="0";
-  let width=0;
-  const interval=setInterval(()=>{
-    if(width>=100) clearInterval(interval);
-    else { width+=2; fill.style.width=width+"%"; }
-  },20);
-}
-function fireConfetti(){ confetti({ particleCount:150, spread:70, origin:{y:0.6} }); }
-
-registerForm.addEventListener("submit", async e=>{
-  e.preventDefault();
-  popupMsg.textContent="";
-  const className=document.getElementById("class").value.trim();
-  const number=document.getElementById("number").value.trim();
-  const user=auth.currentUser;
-  if(!user||!currentClubId){ popupMsg.style.color="#d32f2f"; popupMsg.textContent="เกิดข้อผิดพลาด"; return; }
-
-  try{
-    const q=query(
-      collection(db,"club_registers"),
-      where("uid","==",user.uid),
-      where("clubId","==",currentClubId)
-    );
-    const querySnapshot=await getDocs(q);
-    if(!querySnapshot.empty){ popupMsg.style.color="#d32f2f"; popupMsg.textContent="คุณสมัครชุมนุมนี้แล้ว"; return; }
-
-    await addDoc(collection(db,"club_registers"),{
-      uid:user.uid,
-      className:className,
-      number,
-      clubId:currentClubId,
-      createdAt:new Date()
+      const sid = user.email ? user.email.split('@')[0] : null;
+      db.collection('users').doc(sid).get().then((snap) => {
+        const userData = snap.exists ? snap.data() : null;
+        if (!userData || userData.role !== 'student') {
+          window.location.href = 'index.html';
+          return;
+        }
+        currentUser = { uid: user.uid, studentId: sid, ...userData };
+        loadClubs();
+        updateUserUI();
+      });
     });
-    await updateDoc(doc(db,"clubs",currentClubId),{currentCount:increment(1)});
-    popupMsg.style.color="#388e3c"; popupMsg.textContent="สมัครสำเร็จ!";
-    showProgress(); fireConfetti();
-    setTimeout(()=>popupBg.classList.remove("show"),1500);
-    loadClubs();
-  }catch(err){ popupMsg.style.color="#d32f2f"; popupMsg.textContent="เกิดข้อผิดพลาด: "+err.message; }
-});
-</script>
 
-</body>
+    function loadClubs() {
+      // Firestore realtime listeners
+      db.collection('clubs').onSnapshot((snap) => {
+        clubs = [];
+        snap.forEach((doc) => {
+          clubs.push({ __backendId: doc.id, id: doc.id, ...doc.data() });
+        });
+        renderClubs();
+      });
+
+      // Load settings document (assumed under "settings/system")
+      db.collection('settings').doc('system').onSnapshot((doc) => {
+        const oldSettings = window.__settings || {};
+        window.__settings = doc.exists ? doc.data() : {};
+        const newSettings = window.__settings;
+
+        // If system was just closed, close the club modal
+        if (!oldSettings.system_closed && newSettings.system_closed) {
+          closeClubModal();
+          showToast('ระบบสมัครชุมนุมปิดแล้ว ไม่สามารถสมัครหรือยกเลิกได้');
+        }
+
+        // If system was just opened (was closed before), show notification and update UI
+        if (oldSettings.system_closed && !newSettings.system_closed) {
+          showToast('ระบบเปิดแล้ว สามารถสมัครและยกเลิกการสมัครได้');
+          renderClubs(); // Re-render to show updated button states
+          updateRegisterButtons(); // Update button states
+        }
+
+        updateAnnouncementUI();
+        renderClubs();
+        startRegistrationCountdown();
+      });
+
+      db.collection('registrations').onSnapshot((snap) => {
+        registrations = [];
+        snap.forEach((doc) => {
+          registrations.push({ id: doc.id, ...doc.data() });
+        });
+        renderClubs();
+        updateProfileClubInfo();
+      });
+    }
+
+    function getClubMemberCount(clubId) {
+      return registrations.filter(r => r.club_id === clubId).length;
+    }
+
+    function getStudentRegistration(studentId) {
+      return registrations.find(r => r.student_id === studentId);
+    }
+
+    function escapeHtml(str) {
+      return String(str || '').replace(/[&<>"']/g, function (s) {
+        return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[s];
+      });
+    }
+
+    function updateUserUI() {
+      if (currentUser) {
+        const headerName = `${currentUser.title ? currentUser.title + ' ' : ''}${currentUser.firstname || ''} ${currentUser.lastname || ''}`.trim();
+        document.getElementById('user-name-header').textContent = headerName;
+        
+        // Show avatar in header
+        if (currentUser.avatar) {
+          const img = document.getElementById('user-avatar-img');
+          const text = document.getElementById('user-avatar-text');
+          img.src = currentUser.avatar;
+          img.style.display = 'block';
+          text.style.display = 'none';
+        }
+      }
+    }
+
+    function updateProfileClubInfo() {
+      if (!currentUser) return;
+      const reg = getStudentRegistration(currentUser.studentId);
+      const clubInfo = document.getElementById('profile-club-info');
+
+      if (!reg) {
+        clubInfo.innerHTML = '<p class="text-gray-500 text-sm">ยังไม่ได้สมัครชุมนุม</p>';
+        return;
+      }
+
+      const club = clubs.find(c => c.__backendId === reg.club_id);
+      if (!club) {
+        clubInfo.innerHTML = '<p class="text-gray-500 text-sm">ยังไม่ได้สมัครชุมนุม</p>';
+        return;
+      }
+
+      const date = reg.registered_at ? new Date(reg.registered_at).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' }) : 'ไม่ทราบ';
+      clubInfo.innerHTML = `
+        <div class="space-y-2 text-sm text-blue-700">
+          <p><strong>${club.name}</strong></p>
+          <p>หมวดหมู่: ${club.category || '-'}</p>
+          <p>👨‍🏫 ${club.teacher || '-'}</p>
+          <p>📅 สมัครเมื่อ: ${date}</p>
+        </div>
+      `;
+    }
+
+    function filterByCategory(category) {
+      currentCategory = category;
+      document.querySelectorAll('[data-category]').forEach(btn => {
+        if (btn.dataset.category === category) {
+          btn.style.background = 'linear-gradient(135deg, #2448eb 0%, #facc15 100%)';
+          btn.classList.add('text-white', 'shadow-lg');
+          btn.classList.remove('bg-gray-100', 'text-gray-700');
+        } else {
+          btn.style.background = '';
+          btn.classList.remove('text-white', 'shadow-lg');
+          btn.classList.add('bg-gray-100', 'text-gray-700');
+        }
+      });
+      renderClubs();
+    }
+
+    function handleSearch() {
+      searchQuery = document.getElementById('search-input').value.toLowerCase();
+      renderClubs();
+    }
+
+    function renderClubs() {
+      const grid = document.getElementById('club-grid');
+      const noResults = document.getElementById('no-results');
+      
+      let filtered = clubs;
+
+      if (currentCategory !== 'all') {
+        filtered = filtered.filter(c => c.category === currentCategory);
+      }
+
+      if (searchQuery) {
+        filtered = filtered.filter(c => 
+          (c.name || '').toLowerCase().includes(searchQuery) ||
+          (c.description || '').toLowerCase().includes(searchQuery) ||
+          (c.teacher || '').toLowerCase().includes(searchQuery)
+        );
+      }
+
+      // Check registration window
+      const settings = window.__settings || {};
+      const now = Date.now();
+      const regOpen = settings.registration_open || null;
+      const regClose = settings.registration_close || null;
+      const systemClosed = settings.system_closed || false;
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '';
+        noResults.classList.remove('hidden');
+        return;
+      }
+
+      noResults.classList.add('hidden');
+
+      grid.innerHTML = filtered.map(club => {
+        const memberCount = getClubMemberCount(club.id);
+        const isFull = memberCount >= (club.max_members || 30);
+        const reg = getStudentRegistration(currentUser.studentId);
+        const isRegistered = reg && reg.club_id === club.id;
+        const colorClass = categoryColors[club.category] || 'from-blue-500 to-blue-600';
+
+        // Check registration window status
+        const settings = window.__settings || {};
+        const now = Date.now();
+        const regOpen = settings.registration_open || null;
+        const regClose = settings.registration_close || null;
+        const systemClosed = settings.system_closed || false;
+
+        let registrationStatus = '';
+        if (systemClosed) {
+          registrationStatus = '<span class="px-3 py-1 bg-red-100 text-red-600 rounded-full text-xs font-medium">🔒 ระบบปิด</span>';
+        } else if (isRegistered) {
+          registrationStatus = '<span class="px-3 py-1 bg-green-100 text-green-600 rounded-full text-xs font-medium">✓ สมัครแล้ว</span>';
+        } else if (isFull) {
+          registrationStatus = '<span class="px-3 py-1 bg-red-100 text-red-600 rounded-full text-xs font-medium">เต็ม</span>';
+        } else if (regOpen && now < regOpen) {
+          registrationStatus = '<span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">ยังไม่เปิดรับสมัคร</span>';
+        } else if (regClose && now > regClose) {
+          registrationStatus = '<span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">ปิดรับสมัคร</span>';
+        } else {
+          registrationStatus = '<span class="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-xs font-medium">เปิดรับสมัคร</span>';
+        }
+
+        return `
+          <div class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover cursor-pointer" onclick="showClubDetail('${club.id}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){ showClubDetail('${club.id}'); event.preventDefault(); }" aria-label="เปิดรายละเอียดชุมนุม ${escapeHtml(club.name || 'ไม่ระบุ')}">
+            <div class="bg-gradient-to-r ${colorClass} p-6 text-white">
+              <div class="text-4xl mb-3">📚</div>
+              <h3 class="text-lg font-bold">${club.name || 'ไม่ระบุชื่อ'}</h3>
+              <p class="text-white/80 text-sm mt-1">${club.category || '-'}</p>
+            </div>
+            <div class="p-5">
+              <p class="text-gray-600 text-sm mb-4 line-clamp-2">${club.description || 'ไม่มีรายละเอียด'}</p>
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-gray-500">${memberCount}/${club.max_members || 30} คน</span>
+                ${registrationStatus}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // After rendering, ensure register button states and accessible attributes are updated
+      updateRegisterButtons();
+    }
+
+    // Update register buttons enable/disable based on registration window
+    function updateRegisterButtons() {
+      const settings = window.__settings || {};
+      const now = Date.now();
+      const regOpen = settings.registration_open || null;
+      const regClose = settings.registration_close || null;
+      const systemClosed = settings.system_closed || false;
+
+      document.querySelectorAll('[id^="register-btn-"]').forEach(btn => {
+        let shouldDisable = systemClosed;
+
+        // Only check registration window if system is NOT closed
+        if (!systemClosed) {
+          if (regOpen && now < regOpen) {
+            shouldDisable = true;
+          }
+          if (regClose && now > regClose) {
+            shouldDisable = true;
+          }
+        }
+
+        if (shouldDisable) {
+          btn.disabled = true;
+          btn.setAttribute('aria-disabled', 'true');
+          btn.style.pointerEvents = 'none';
+          btn.style.opacity = '0.5';
+          if (systemClosed) btn.title = 'ระบบปิดแล้ว';
+          else if (regOpen && now < regOpen) btn.title = 'ยังไม่เปิดรับสมัคร';
+          else if (regClose && now > regClose) btn.title = 'ปิดรับสมัคร';
+        } else {
+          btn.disabled = false;
+          btn.removeAttribute('aria-disabled');
+          btn.style.pointerEvents = 'auto';
+          btn.style.opacity = '1';
+          btn.title = '';
+        }
+      });
+
+      // Also disable cancel buttons when system is closed
+      document.querySelectorAll('[id^="cancel-btn-"]').forEach(btn => {
+        if (systemClosed) {
+          btn.disabled = true;
+          btn.setAttribute('aria-disabled', 'true');
+          btn.title = 'ระบบปิดแล้ว ไม่สามารถยกเลิกได้';
+          btn.style.opacity = '0.5';
+          btn.style.cursor = 'not-allowed';
+          btn.style.pointerEvents = 'none';
+          btn.onclick = (e) => { e.preventDefault(); showToast('ระบบปิดแล้ว ไม่สามารถยกเลิกได้'); return false; };
+        } else {
+          btn.disabled = false;
+          btn.removeAttribute('aria-disabled');
+          btn.title = '';
+          btn.style.opacity = '1';
+          btn.style.cursor = 'pointer';
+          btn.style.pointerEvents = 'auto';
+          // Reset onclick to original
+          const clubId = btn.id.replace('cancel-btn-', '');
+          btn.onclick = () => cancelRegistration(clubId);
+        }
+      });
+    }
+
+    // Registration countdown UI
+    let __registrationCountdownInterval = null;
+    let __alertTimers = {}; // Track alerts to avoid duplicates
+    
+    function startRegistrationCountdown() {
+      if (__registrationCountdownInterval) clearInterval(__registrationCountdownInterval);
+      updateRegistrationCountdown();
+      __registrationCountdownInterval = setInterval(updateRegistrationCountdown, 1000);
+    }
+
+    function updateRegistrationCountdown() {
+      const el = document.getElementById('registration-countdown');
+      const txt = document.getElementById('registration-countdown-text');
+      if (!el || !txt) return;
+      const settings = window.__settings || {};
+      const now = Date.now();
+      const regOpen = settings.registration_open || null;
+      const regClose = settings.registration_close || null;
+      const systemClosed = settings.system_closed || false;
+
+      const dtOpts = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+      
+      // Auto-close: if registration_close time has passed, close the system
+      if (regClose && now >= regClose && !systemClosed) {
+        if (!__alertTimers['auto_close']) {
+          __alertTimers['auto_close'] = true;
+          closeClubModal();
+          showToast('🔒 การรับสมัครปิดแล้ว ระบบจะปิดโดยอัตโนมัติ');
+          // Auto-set system_closed flag in Firestore when close time is reached
+          db.collection('settings').doc('system').update({ system_closed: true }).catch(e => console.error('Error closing system:', e));
+        }
+      } else {
+        __alertTimers['auto_close'] = false;
+      }
+
+      // Alert 5 minutes before closing
+      if (regClose && now < regClose && (regClose - now < 5 * 60 * 1000) && (regClose - now > 60 * 1000)) {
+        if (!__alertTimers['5min_warning']) {
+          __alertTimers['5min_warning'] = true;
+          const remaining = Math.ceil((regClose - now) / 60000);
+          showToast(`⚠️ บอกเลิก: การรับสมัครจะปิดในอีก ${remaining} นาที`);
+        }
+      } else {
+        __alertTimers['5min_warning'] = false;
+      }
+
+      // Alert 1 minute before closing
+      if (regClose && now < regClose && (regClose - now < 60 * 1000)) {
+        if (!__alertTimers['1min_warning']) {
+          __alertTimers['1min_warning'] = true;
+          showToast('🚨 เร่งด่วน: การรับสมัครจะปิดในอีก 1 นาที');
+        }
+      } else {
+        __alertTimers['1min_warning'] = false;
+      }
+
+      // Check if system is closed first
+      if (systemClosed) {
+        txt.textContent = `🔒 ระบบสมัครชุมนุมปิดแล้ว - นักเรียนไม่สามารถสมัครหรือยกเลิกได้`;
+        el.classList.remove('hidden');
+      } else if (regOpen && now < regOpen) {
+        const diff = regOpen - now;
+        const openStr = new Date(regOpen).toLocaleString('th-TH', dtOpts);
+        txt.textContent = `⏳ การรับสมัครจะเริ่มใน ${formatDuration(diff)} (เปิด: ${openStr})`;
+        el.classList.remove('hidden');
+      } else if (regClose && now < regClose && (!regOpen || now >= regOpen)) {
+        const diff = regClose - now;
+        const closeStr = new Date(regClose).toLocaleString('th-TH', dtOpts);
+        txt.textContent = `🟢 รับสมัครกำลังเปิด — ปิดใน ${formatDuration(diff)} (ปิด: ${closeStr})`;
+        el.classList.remove('hidden');
+      } else if (regClose && now >= regClose) {
+        const closeStr = new Date(regClose).toLocaleString('th-TH', dtOpts);
+        txt.textContent = `🔒 การรับสมัครปิดแล้ว (ปิด: ${closeStr})`;
+        el.classList.remove('hidden');
+      } else if (regOpen && !regClose) {
+        const openStr = new Date(regOpen).toLocaleString('th-TH', dtOpts);
+        txt.textContent = `⏳ การรับสมัครจะเริ่มใน ${formatDuration(regOpen - now)} (เปิด: ${openStr})`;
+        el.classList.remove('hidden');
+      } else {
+        el.classList.add('hidden');
+      }
+
+      // Also update register buttons state
+      updateRegisterButtons();
+    }
+
+    function formatDuration(ms) {
+      if (ms <= 0) return '0 วินาที';
+      const s = Math.floor(ms / 1000);
+      const days = Math.floor(s / 86400);
+      const hours = Math.floor((s % 86400) / 3600);
+      const minutes = Math.floor((s % 3600) / 60);
+      const seconds = s % 60;
+      if (days > 0) return `${days} วัน ${hours} ชม.`;
+      if (hours > 0) return `${hours} ชม. ${minutes} นาที`;
+      if (minutes > 0) return `${minutes} นาที ${seconds} วินาที`;
+      return `${seconds} วินาที`;
+    }
+
+    // Show announcement from settings
+    function updateAnnouncementUI() {
+      const settings = window.__settings || {};
+      const ann = settings.announcement || '';
+      const el = document.getElementById('system-announcement');
+      const txt = document.getElementById('system-announcement-text');
+      if (!el || !txt) return;
+      if (ann && ann.trim() !== '') {
+        txt.textContent = ann;
+        el.classList.remove('hidden');
+      } else {
+        el.classList.add('hidden');
+      }
+    }
+
+    function showClubDetail(clubId) {
+      const club = clubs.find(c => c.__backendId === clubId);
+      if (!club) return;
+
+      const memberCount = getClubMemberCount(clubId);
+      const isFull = memberCount >= (club.max_members || 30);
+      const reg = getStudentRegistration(currentUser.studentId);
+      const isRegistered = reg && reg.club_id === clubId;
+      const hasOtherClub = reg && reg.club_id !== clubId;
+      const settings = window.__settings || {};
+      const now = Date.now();
+      const regOpen = settings.registration_open || null;
+      const regClose = settings.registration_close || null;
+      const systemClosed = settings.system_closed || false;
+      const colorClass = categoryColors[club.category] || 'from-blue-500 to-blue-600';
+
+      const members = registrations.filter(r => r.club_id === clubId);
+
+      // Determine button state
+      let actionButton = '';
+      if (systemClosed) {
+        actionButton = `
+          <div class="bg-red-50 border border-red-200 rounded-xl p-4 text-red-600 text-sm font-medium">
+            🔒 <strong>ระบบสมัครชุมนุมปิดแล้ว</strong> - ไม่สามารถสมัครหรือยกเลิกได้ในขณะนี้
+          </div>
+        `;
+      } else if (isRegistered) {
+        actionButton = `
+          <button onclick="if(!window.__settings?.system_closed) { cancelRegistration('${clubId}'); } else { showToast('ระบบปิดแล้ว ไม่สามารถยกเลิกได้'); }" 
+                  id="cancel-btn-${clubId}" 
+                  class="w-full bg-red-500 text-white py-3 rounded-xl font-medium hover:bg-red-600 transition-all cursor-pointer">
+            ยกเลิกการสมัคร
+          </button>
+        `;
+      } else if (hasOtherClub) {
+        actionButton = `
+          <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-yellow-700 text-sm">
+            ⚠️ คุณได้สมัครชุมนุมอื่นแล้ว
+          </div>
+        `;
+      } else if (isFull) {
+        actionButton = `
+          <div class="bg-red-50 border border-red-200 rounded-xl p-4 text-red-600 text-sm">
+            ❌ ชุมนุมเต็มแล้ว
+          </div>
+        `;
+      } else if (regOpen && now < regOpen) {
+        actionButton = `
+          <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 text-gray-600 text-sm">
+            ⏳ ยังไม่เปิดรับสมัคร (เปิด: ${new Date(regOpen).toLocaleString('th-TH')})
+          </div>
+        `;
+      } else if (regClose && now > regClose) {
+        actionButton = `
+          <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 text-gray-600 text-sm">
+            🔒 ปิดรับสมัคร (ปิด: ${new Date(regClose).toLocaleString('th-TH')})
+          </div>
+        `;
+      } else {
+        actionButton = `
+          <button onclick="registerClub('${clubId}')" 
+                  id="register-btn-${clubId}" 
+                  class="w-full text-white py-3 rounded-xl font-medium hover:opacity-90 transition-all shadow-lg cursor-pointer" 
+                  style="background: linear-gradient(135deg, #2448eb 0%, #facc15 100%);">
+            สมัครชุมนุมนี้
+          </button>
+        `;
+      }
+
+      let html = `
+        <div class="bg-gradient-to-r ${colorClass} -mx-8 -mt-8 p-8 text-white rounded-t-3xl">
+          <div class="text-6xl mb-4">📚</div>
+          <h2 class="text-2xl font-bold">${club.name || 'ไม่ระบุชื่อ'}</h2>
+          <p class="text-white/80 mt-2">${club.category || '-'}</p>
+        </div>
+        
+        <div class="mt-6 space-y-4">
+          <p class="text-gray-600">${club.description || 'ไม่มีรายละเอียด'}</p>
+          
+          <div class="grid grid-cols-2 gap-4">
+            <div class="bg-gray-50 rounded-xl p-4">
+              <p class="text-gray-500 text-sm">ครูที่ปรึกษา</p>
+              <p class="font-medium text-gray-800">${club.teacher || '-'}</p>
+            </div>
+            <div class="bg-gray-50 rounded-xl p-4">
+              <p class="text-gray-500 text-sm">สมาชิก</p>
+              <p class="font-medium text-gray-800">${memberCount}/${club.max_members || 30}</p>
+            </div>
+          </div>
+
+          <div class="bg-gray-50 rounded-xl p-4">
+            <div class="flex items-center justify-between mb-2">
+              <p class="text-gray-500 text-sm">ความเต็ม</p>
+              <p class="font-medium">${Math.round((memberCount/(club.max_members || 30))*100)}%</p>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2">
+              <div class="h-2 rounded-full transition-all" style="background: linear-gradient(135deg, #2448eb 0%, #facc15 100%); width: ${(memberCount/(club.max_members || 30))*100}%"></div>
+            </div>
+          </div>
+
+          ${members.length > 0 ? `
+            <div class="bg-gray-50 rounded-xl p-4">
+              <p class="text-gray-500 text-sm mb-3">รายชื่อสมาชิก (${members.length})</p>
+              <div class="space-y-2 max-h-32 overflow-y-auto text-sm">
+                ${members.map((m, idx) => `<p class="text-gray-700">${idx + 1}. ${m.student_name} (${m.student_class})</p>`).join('')}
+              </div>
+            </div>
+          ` : ''}
+
+          ${actionButton}
+        </div>
+      `;
+
+      document.getElementById('club-modal-content').innerHTML = html;
+      document.getElementById('club-modal').classList.remove('hidden');
+      // Update button states after rendering modal
+      updateRegisterButtons();
+    }
+
+    function closeClubModal() {
+      document.getElementById('club-modal').classList.add('hidden');
+    }
+
+    function showProfile() {
+      if (!currentUser) return;
+      
+      // Load avatar from Firebase
+      if (currentUser.avatar) {
+        const img = document.getElementById('profile-avatar-img');
+        const text = document.getElementById('profile-avatar-text');
+        img.src = currentUser.avatar;
+        img.style.display = 'block';
+        text.style.display = 'none';
+      }
+      
+      document.getElementById('profile-student-id').textContent = currentUser.studentId || '-';
+      const profileName = `${currentUser.title ? currentUser.title + ' ' : ''}${currentUser.firstname || ''} ${currentUser.lastname || ''}`.trim();
+      document.getElementById('profile-student-name').textContent = profileName || '-';
+      const studentNumber = currentUser.seat || currentUser.number || currentUser.no || '';
+      const level = currentUser.level || '';
+      const room = currentUser.room || '';
+      let classInfo = '';
+      if (level && room) classInfo = `${level}/${room}`;
+      else if (level) classInfo = level;
+      else if (room) classInfo = room;
+
+      // Set class and number into separate fields
+      document.getElementById('profile-student-class').textContent = classInfo || '-';
+      document.getElementById('profile-student-number').textContent = studentNumber || '-';
+      updateProfileClubInfo();
+      document.getElementById('profile-modal').classList.remove('hidden');
+    }
+
+    function closeProfile() {
+      document.getElementById('profile-modal').classList.add('hidden');
+    }
+
+    function showProfileTab(tab) {
+      const infoTab = document.getElementById('profile-info-tab');
+      const passwordTab = document.getElementById('profile-password-tab');
+      const buttons = document.querySelectorAll('.profile-tab-btn');
+
+      buttons.forEach(btn => {
+        if (btn.dataset.tab === tab) {
+          btn.style.borderBottomColor = '#3b82f6';
+          btn.style.color = '#3b82f6';
+        } else {
+          btn.style.borderBottomColor = 'transparent';
+          btn.style.color = '#374151';
+        }
+      });
+
+      if (tab === 'info') {
+        infoTab.classList.remove('hidden');
+        passwordTab.classList.add('hidden');
+      } else {
+        infoTab.classList.add('hidden');
+        passwordTab.classList.remove('hidden');
+        // Clear password fields
+        document.getElementById('old-password').value = '';
+        document.getElementById('new-password').value = '';
+        document.getElementById('confirm-password').value = '';
+      }
+    }
+
+    async function changePassword() {
+      const oldPass = document.getElementById('old-password').value;
+      const newPass = document.getElementById('new-password').value;
+      const confirmPass = document.getElementById('confirm-password').value;
+
+      if (!oldPass || !newPass || !confirmPass) {
+        showToast('กรุณากรอกข้อมูลให้ครบถ้วน');
+        return;
+      }
+
+      if (newPass !== confirmPass) {
+        showToast('รหัสผ่านใหม่ไม่ตรงกัน');
+        return;
+      }
+
+      if (newPass.length < 6) {
+        showToast('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร');
+        return;
+      }
+
+      try {
+        // Re-authenticate first
+        const credential = firebase.auth.EmailAuthProvider.credential(
+          auth.currentUser.email,
+          oldPass
+        );
+        
+        await auth.currentUser.reauthenticateWithCredential(credential);
+        
+        // Update password
+        await auth.currentUser.updatePassword(newPass);
+        
+        showToast('เปลี่ยนรหัสผ่านสำเร็จ!');
+        document.getElementById('old-password').value = '';
+        document.getElementById('new-password').value = '';
+        document.getElementById('confirm-password').value = '';
+      } catch (err) {
+        if (err.code === 'auth/wrong-password') {
+          showToast('รหัสผ่านเก่าไม่ถูกต้อง');
+        } else if (err.code === 'auth/weak-password') {
+          showToast('รหัสผ่านใหม่อ่อนเกินไป');
+        } else {
+          showToast('เกิดข้อผิดพลาด: ' + err.message);
+        }
+      }
+    }
+
+    // Compress image file using canvas and return a dataURL
+    function compressImage(file, maxWidth = 800, maxHeight = 800, initialQuality = 0.92) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = () => reject(new Error('read_error'));
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onerror = () => reject(new Error('image_error'));
+          img.onload = () => {
+            let { width, height } = img;
+            // Calculate new size while preserving aspect ratio
+            if (width > maxWidth || height > maxHeight) {
+              const ratio = Math.min(maxWidth / width, maxHeight / height);
+              width = Math.round(width * ratio);
+              height = Math.round(height * ratio);
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+
+            // Try iterative compression to target <= 2MB
+            let quality = initialQuality;
+            function toData(qual) {
+              try {
+                const dataURL = canvas.toDataURL('image/jpeg', qual);
+                return dataURL;
+              } catch (err) {
+                return null;
+              }
+            }
+
+            let dataURL = toData(quality);
+            // If initial conversion failed, reject
+            if (!dataURL) return reject(new Error('compress_error'));
+
+            // Helper to compute approx bytes from base64
+            function dataURLSizeBytes(d) {
+              const base64 = d.split(',')[1] || '';
+              return Math.round(base64.length * 3 / 4);
+            }
+
+            const MAX_BYTES = 2 * 1024 * 1024; // 2MB
+            while (dataURLSizeBytes(dataURL) > MAX_BYTES && quality > 0.45) {
+              quality -= 0.07;
+              dataURL = toData(quality);
+              if (!dataURL) break;
+            }
+
+            resolve(dataURL);
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function changeProfilePicture() {
+      const file = document.getElementById('avatar-input').files[0];
+      if (!file) return;
+
+      if (!file.type || !file.type.startsWith('image/')) {
+        showToast('กรุณาเลือกไฟล์รูปภาพหรือ GIF เท่านั้น');
+        return;
+      }
+
+      // If GIF, avoid lossy compression (animated gifs would lose animation). Only accept small GIFs.
+      if (file.type === 'image/gif') {
+        if (file.size > 2 * 1024 * 1024) {
+          showToast('ไฟล์ GIF มีขนาดใหญ่เกินไป โปรดลองไฟล์ขนาดเล็กหรือใช้ภาพ JPG/PNG');
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const dataURL = e.target.result;
+          const img = document.getElementById('profile-avatar-img');
+          const text = document.getElementById('profile-avatar-text');
+          img.src = dataURL;
+          img.style.display = 'block';
+          text.style.display = 'none';
+
+          db.collection('users').doc(currentUser.studentId).update({ avatar: dataURL })
+            .then(() => {
+              currentUser.avatar = dataURL;
+              const headerImg = document.getElementById('user-avatar-img');
+              const headerText = document.getElementById('user-avatar-text');
+              if (headerImg) {
+                headerImg.src = dataURL;
+                headerImg.style.display = 'block';
+              }
+              if (headerText) headerText.style.display = 'none';
+              showToast('บันทึกรูปภาพสำเร็จ!');
+            })
+            .catch(() => showToast('เกิดข้อผิดพลาด'));
+        };
+        reader.readAsDataURL(file);
+        return;
+      }
+
+      // For other image types, run compression
+      try {
+        showToast('กำลังบีบอัดรูปภาพ...');
+        const compressedDataURL = await compressImage(file, 800, 800, 0.92);
+
+        // Validate compressed size
+        const base64 = compressedDataURL.split(',')[1] || '';
+        const byteSize = Math.round(base64.length * 3 / 4);
+        if (byteSize > 2 * 1024 * 1024) {
+          showToast('ยังบีบอัดไฟล์ไม่พอ โปรดลองเลือกรูปภาพขนาดเล็กลง');
+          return;
+        }
+
+        // Update UI with compressed image
+        const img = document.getElementById('profile-avatar-img');
+        const text = document.getElementById('profile-avatar-text');
+        img.src = compressedDataURL;
+        img.style.display = 'block';
+        text.style.display = 'none';
+
+        // Save compressed to Firebase
+        await db.collection('users').doc(currentUser.studentId).update({ avatar: compressedDataURL });
+        currentUser.avatar = compressedDataURL;
+        const headerImg = document.getElementById('user-avatar-img');
+        const headerText = document.getElementById('user-avatar-text');
+        if (headerImg) {
+          headerImg.src = compressedDataURL;
+          headerImg.style.display = 'block';
+        }
+        if (headerText) headerText.style.display = 'none';
+        showToast('บันทึกรูปภาพสำเร็จ!');
+      } catch (err) {
+        console.error(err);
+        showToast('ไม่สามารถบีบอัดรูปภาพได้');
+      }
+    }
+
+    async function registerClub(clubId) {
+      if (!currentUser) return;
+
+      const settings = window.__settings || {};
+      const now = Date.now();
+
+      // Check if system is closed first - if closed, no registration allowed
+      if (settings.system_closed) {
+        showToast('ระบบสมัครชุมนุมปิดแล้ว ติดต่อครูที่ปรึกษาหากมีข้อสงสัย');
+        return;
+      }
+
+      // Only check registration window if system is OPEN
+      if (settings.registration_open && now < settings.registration_open) {
+        showToast('ยังไม่ถึงเวลารับสมัคร');
+        return;
+      }
+      if (settings.registration_close && now > settings.registration_close) {
+        showToast('ปิดรับสมัครแล้ว');
+        return;
+      }
+
+      // Prevent multiple registrations: allow only one club per student
+      const existing = getStudentRegistration(currentUser.studentId);
+      if (existing) {
+        if (existing.club_id === clubId) {
+          showToast('คุณสมัครชุมนุมนี้แล้ว');
+        } else {
+          showToast('คุณได้สมัครชุมนุมอื่นแล้ว หากต้องการสมัครใหม่ กรุณายกเลิกการสมัครก่อน');
+        }
+        return;
+      }
+
+      const btn = document.getElementById(`register-btn-${clubId}`);
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'กำลังสมัคร...';
+      }
+
+      try {
+        await db.collection('registrations').add({
+          type: 'registration',
+          student_id: currentUser.studentId,
+          student_name: `${currentUser.title ? currentUser.title + ' ' : ''}${currentUser.firstname || ''} ${currentUser.lastname || ''}`,
+          student_class: `${currentUser.level}/${currentUser.room}`,
+          club_id: clubId,
+          registered_at: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        showToast('สมัครสำเร็จ!');
+        closeClubModal();
+      } catch (err) {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = 'สมัครชุมนุมนี้';
+        }
+        showToast('เกิดข้อผิดพลาด');
+      }
+    }
+
+    async function cancelRegistration(clubId) {
+      if (!currentUser) return;
+
+      // Check if system is closed - STRICT CHECK
+      const settings = window.__settings || {};
+      if (settings.system_closed) {
+        showToast('ระบบปิดแล้ว ไม่สามารถทำการยกเลิกได้');
+        return;
+      }
+
+      const btn = document.getElementById(`cancel-btn-${clubId}`);
+      
+      // Double check: if button is disabled, don't proceed
+      if (btn && (btn.disabled || btn.getAttribute('aria-disabled') === 'true')) {
+        showToast('ระบบปิดแล้ว ไม่สามารถทำการยกเลิกได้');
+        return;
+      }
+
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'กำลังยกเลิก...';
+      }
+
+      try {
+        const reg = registrations.find(r => r.student_id === currentUser.studentId && r.club_id === clubId);
+        if (reg && reg.id) {
+          await db.collection('registrations').doc(reg.id).delete();
+        }
+        showToast('ยกเลิกแล้ว');
+        closeClubModal();
+      } catch (err) {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = 'ยกเลิกการสมัคร';
+        }
+        showToast('เกิดข้อผิดพลาด');
+      }
+    }
+
+    function logout() {
+      Swal.fire({
+        icon: 'question',
+        title: 'ออกจากระบบ',
+        text: 'คุณต้องการออกจากระบบหรือไม่?',
+        showCancelButton: true,
+        confirmButtonText: 'ออก',
+        cancelButtonText: 'ยกเลิก',
+        confirmButtonColor: '#6366f1',
+        didOpen: () => {
+          Swal.hideLoading();
+        }
+      }).then((result) => {
+        if (result.isConfirmed) {
+          Swal.close();
+          auth.signOut().then(() => {
+            window.location.href = 'index.html';
+          });
+        }
+      });
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-message').textContent = msg;
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 3000);
+    }
+  </script>
+ </body>
 </html>

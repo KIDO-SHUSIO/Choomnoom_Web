@@ -1,136 +1,119 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>เข้าสู่ระบบ</title>
-  <link href="https://fonts.googleapis.com/css2?family=Itim&display=swap" rel="stylesheet">
-  <style>
-    body {
-      margin: 0; font-family: 'Itim', cursive;
-      background: linear-gradient(135deg, #ACB6E5, #74ebd5);
-      display: flex; justify-content: center; align-items: center;
-      min-height: 100vh; padding: 20px;
-    }
-    .container {
-      background: #fff; padding: 30px 40px; border-radius: 18px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-      max-width: 420px; width: 100%;
-    }
-    h1 { text-align: center; color: #333; margin-bottom: 24px; }
-    label { display: block; margin-bottom: 6px; font-weight: bold; color: #555; }
-    input {
-      width: 100%; padding: 12px; border-radius: 10px;
-      border: 1px solid #ccc; margin-bottom: 16px;
-      font-family: 'Itim', cursive;
-    }
-    button {
-      width: 100%; padding: 14px; border: none; border-radius: 10px;
-      background: #2196F3; color: white; font-size: 16px; cursor: pointer;
-      margin-bottom: 10px;
-    }
-    button:hover { background: #1976D2; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบรับสมัครชุมนุม - โรงเรียนพระปฐมวิทยาลัย</title>
+    
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <!-- include Firestore instead of Realtime Database -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
-  <div class="container">
-    <div style="text-align:center; margin-bottom:20px;">
-      <img src="https://image2url.com/images/1759080347158-cdd8e5b6-c5ee-4ab0-aa72-6cff6d590868.png" alt="Club Logo" style="max-width:120px; border-radius:12px;" />
+
+    <div class="login-card">
+        <div class="icon-circle">
+            <img src="club-logo.png" alt="Club Logo" class="profile-img">
+        </div>
+        
+        <h2 id="formTitle">เข้าสู่ระบบ</h2>
+        <p class="subtitle">ระบบสมัครชุมนุม</p>
+        <p class="subtitle">โรงเรียนพระปฐมวิทยาลัย</p>
+
+        <form id="loginForm">
+            <div class="input-group">
+                <label>รหัสนักเรียน</label>
+                <input type="text" id="login_id" placeholder="รหัสประจำตัว 5 หลัก" maxlength="5" required>
+            </div>
+
+            <div class="input-group">
+                <label>รหัสผ่าน</label>
+                <input type="password" id="login_password" placeholder="ระบุรหัสผ่าน" required>
+            </div>
+
+            <button type="submit" class="login-btn">เข้าสู่ระบบ</button>
+            
+            <p class="footer-text">ยังไม่มีบัญชี? <a href="#" onclick="switchForm('register')">สมัครสมาชิก</a></p>
+        </form>
+
+        <form id="registerForm" style="display: none;">
+            <div class="input-group">
+                <label>รหัสนักเรียน</label>
+                <input type="text" id="student_id" placeholder="รหัสประจำตัว 5 หลัก" maxlength="5" required>
+            </div>
+
+            <div class="input-row">
+                <div class="input-group prefix-group">
+                    <label>คำนำหน้า</label>
+                    <select id="title_prefix" required>
+                        <option value="" disabled selected>คำนำหน้า</option>
+                        <option value="นาย">นาย</option>
+                        <option value="นางสาว">นางสาว</option>
+                        <option value="เด็กชาย">เด็กชาย</option>
+                        <option value="เด็กหญิง">เด็กหญิง</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>ชื่อ</label>
+                    <input type="text" id="firstname" placeholder="ชื่อ" required>
+                </div>
+                <div class="input-group">
+                    <label>นามสกุล</label>
+                    <input type="text" id="lastname" placeholder="นามสกุล" required>
+                </div>
+            </div>
+
+            <div class="input-row">
+                <div class="input-group">
+                    <label>ชั้น</label>
+                    <select id="level" required>
+                        <option value="" disabled selected>เลือกชั้น</option>
+                        <option value="1">ม.1</option>
+                        <option value="2">ม.2</option>
+                        <option value="3">ม.3</option>
+                        <option value="4">ม.4</option>
+                        <option value="5">ม.5</option>
+                        <option value="6">ม.6</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>ห้อง</label>
+                    <select id="room" required>
+                        <option value="" disabled selected>ห้อง</option>
+                        <script>
+                            for(let i=1; i<=16; i++) {
+                                document.write(`<option value="${i}">${i}</option>`);
+                            }
+                        </script>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>เลขที่</label>
+                    <input type="number" id="no" placeholder="ที่" min="1" required>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>รหัสผ่าน</label>
+                <input type="password" id="password" placeholder="ตั้งรหัสผ่าน" required>
+            </div>
+
+            <div class="input-group">
+                <label>ยืนยันรหัสผ่าน</label>
+                <input type="password" id="confirm_password" placeholder="พิมพ์รหัสอีกครั้ง" required>
+            </div>
+
+            <button type="submit" class="login-btn">ยืนยันการสมัคร</button>
+            <p class="footer-text">มีบัญชีอยู่แล้ว? <a href="#" onclick="switchForm('login')">เข้าสู่ระบบ</a></p>
+        </form>
     </div>
-    <h1>เข้าสู่ระบบ</h1>
-    <form id="loginForm">
-      <label for="idnumber">เลขประจำตัวนักเรียน</label>
-      <input type="text" id="idnumber" name="idnumber" required />
 
-      <label for="password">รหัสผ่าน</label>
-      <input type="password" id="password" name="password" required />
+    <script src="script.js"></script>
 
-      <button type="submit">เข้าสู่ระบบ</button>
-    </form>
-    <div style="text-align:center; margin-top:16px;">
-      <a href="register.html" style="color:#2196F3; text-decoration:underline; font-size:16px;">
-        สมัครสมาชิก
-      </a>
-    </div>
-    <div id="msg" style="margin-top:16px; text-align:center; color:#d32f2f;"></div>
-  </div>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { 
-      getFirestore, collection, query, where, getDocs, doc, getDoc, setDoc 
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyCmDBt1LJLWUEljGQVjYcaJ5FJRm9pcM_k",
-      authDomain: "wedappis.firebaseapp.com",
-      projectId: "wedappis",
-      storageBucket: "wedappis.appspot.com",
-      messagingSenderId: "838403173250",
-      appId: "1:838403173250:web:1f5fc5786c6c1104c4bd9b",
-      measurementId: "G-F73HSEZBBW"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    const form = document.getElementById("loginForm");
-    const msg = document.getElementById("msg");
-
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      msg.textContent = "";
-
-      const idnumber = document.getElementById("idnumber").value.trim();
-      const password = document.getElementById("password").value;
-
-      try {
-        // 🔍 ค้นหาอีเมลจาก Firestore ด้วยเลขประจำตัว
-        const q = query(collection(db, "users"), where("idnumber", "==", idnumber));
-        const snap = await getDocs(q);
-
-        if (snap.empty) {
-          msg.textContent = "ไม่พบเลขประจำตัวนี้";
-          return;
-        }
-
-        const userData = snap.docs[0].data();
-        const email = userData.email;
-
-        // 🔑 เข้าสู่ระบบด้วยอีเมลและรหัสผ่าน
-        const cred = await signInWithEmailAndPassword(auth, email, password);
-
-        // 📥 ดึง role
-        const userDocRef = doc(db, "users", cred.user.uid);
-        const userDoc = await getDoc(userDocRef);
-        const role = (userDoc.data().memberType || "").toLowerCase();
-
-        // ✅ Sync ข้อมูลกลับเข้า Firestore เผื่อชื่อ/รูปหาย
-        await setDoc(userDocRef, {
-          uid: cred.user.uid,
-          email: cred.user.email,
-          idnumber: idnumber,
-          displayName: cred.user.displayName || userData.displayName || "", 
-          photoURL: cred.user.photoURL || userData.photoURL || "",
-          memberType: role || "นักเรียน"
-        }, { merge: true });
-
-        // 🌐 Redirect ตาม role
-        if (role === "นักเรียน") {
-          window.location.href = "student.html";
-        } else if (role === "admin") {
-          window.location.href = "admin.html";
-        } else {
-          msg.style.color = "#d32f2f";
-          msg.textContent = "ไม่มีสิทธิ์เข้าใช้งาน";
-        }
-      } catch (err) {
-        msg.style.color = "#d32f2f";
-        msg.textContent = "เข้าสู่ระบบไม่สำเร็จ: เลขประจำตัวนักเรียนหรือรหัสผ่านไม่ถูกต้อง";
-      }
-    });
-  </script>
 </body>
 </html>

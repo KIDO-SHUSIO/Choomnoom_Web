@@ -1,0 +1,305 @@
+/* --- การตั้งค่าพื้นฐาน --- */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Sarabun', sans-serif;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* การไล่สีพื้นหลัง นวลๆ */
+    background: linear-gradient(135deg, #2448eb 0%, #ffffffda 50%, #facc15 100%);
+    background-attachment: fixed;
+    padding: 20px;
+}
+
+/* --- การ์ดหลัก (Login & Register) --- */
+.login-card {
+    background: white;
+    padding: 35px 30px;
+    border-radius: 24px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 450px;
+    text-align: center;
+}
+
+/* --- ส่วนโลโก้และหัวข้อ --- */
+.icon-circle {
+    width: 90px;
+    height: 90px;
+    background: white;
+    border: 3px solid #7c8ee0;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto 15px;
+    overflow: hidden;
+}
+
+.profile-img {
+    width: 85%;
+    height: 85%;
+    object-fit: contain;
+}
+
+h2 {
+    color: #1e3a8a;
+    margin-bottom: 5px;
+    font-size: 1.6rem;
+}
+
+.subtitle {
+    color: #64748b;
+    font-size: 0.9rem;
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* --- ฟอร์มและการจัดการ Input --- */
+form {
+    margin-top: 25px;
+}
+
+.input-group {
+    text-align: left;
+    margin-bottom: 15px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #1e3a8a;
+    font-size: 0.85rem;
+}
+
+.input-group input, 
+.input-group select {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    outline: none;
+    transition: all 0.3s ease;
+    background-color: #f8fafc;
+    font-size: 0.95rem;
+}
+
+.input-group input:focus, 
+.input-group select:focus {
+    border-color: #7c8ee0;
+    background-color: #fff;
+    box-shadow: 0 0 0 4px rgba(124, 142, 224, 0.1);
+}
+
+/* --- การจัดวางแบบบรรทัดเดียว (Row) --- */
+.input-row {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+}
+
+.input-row .input-group {
+    flex: 1;
+}
+
+/* Make prefix select compact inside the name row */
+.input-row .prefix-group {
+    flex: 0 0 120px;
+}
+.input-row .prefix-group .input-group input,
+.input-row .prefix-group .input-group select {
+    padding: 10px 8px;
+}
+
+/* --- ปุ่มกด --- */
+.login-btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    background: #6d83f2;
+    color: white;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: transform 0.2s, background 0.3s;
+}
+
+.login-btn:hover {
+    background: #5a6edb;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(109, 131, 242, 0.3);
+}
+
+.login-btn:active {
+    transform: translateY(0);
+}
+
+/* --- ส่วนท้าย --- */
+.footer-text {
+    margin-top: 25px;
+    font-size: 0.9rem;
+    color: #64748b;
+}
+
+.footer-text a {
+    color: #1e3a8a;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.footer-text a:hover {
+    text-decoration: underline;
+}
+
+/* ซ่อนปุ่ม Spin button ของ input type number */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* --- Mobile Responsive Styles --- */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    .login-card {
+        padding: 25px 20px;
+        max-width: 100%;
+        border-radius: 16px;
+    }
+
+    h2 {
+        font-size: 1.3rem;
+    }
+
+    .subtitle {
+        font-size: 0.8rem;
+    }
+
+    .input-group {
+        margin-bottom: 12px;
+    }
+
+    .input-group label {
+        font-size: 0.75rem;
+        margin-bottom: 3px;
+    }
+
+    .input-group input,
+    .input-group select {
+        padding: 10px 12px;
+        font-size: 0.9rem;
+        border-radius: 8px;
+    }
+
+    .input-row {
+        gap: 8px;
+    }
+
+    .input-row .prefix-group {
+        flex: 0 0 90px;
+    }
+
+    .input-row .prefix-group select {
+        padding: 8px 6px;
+        font-size: 0.85rem;
+    }
+
+    .login-btn {
+        padding: 12px;
+        font-size: 0.95rem;
+        margin-top: 8px;
+    }
+
+    .footer-text {
+        font-size: 0.8rem;
+        margin-top: 15px;
+    }
+
+    .icon-circle {
+        width: 70px;
+        height: 70px;
+        margin-bottom: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 8px;
+    }
+
+    .login-card {
+        padding: 20px 15px;
+        border-radius: 12px;
+    }
+
+    h2 {
+        font-size: 1.1rem;
+        margin-bottom: 3px;
+    }
+
+    .subtitle {
+        font-size: 0.75rem;
+    }
+
+    .input-group {
+        margin-bottom: 10px;
+    }
+
+    .input-group label {
+        font-size: 0.7rem;
+        margin-bottom: 2px;
+    }
+
+    .input-group input,
+    .input-group select {
+        padding: 8px 10px;
+        font-size: 0.85rem;
+    }
+
+    .input-row {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .input-row .input-group {
+        flex: 1 !important;
+    }
+
+    .input-row .prefix-group {
+        flex: 1 !important;
+    }
+
+    .input-row .prefix-group select {
+        padding: 8px 10px;
+        font-size: 0.85rem;
+    }
+
+    .login-btn {
+        padding: 11px;
+        font-size: 0.9rem;
+        margin-top: 6px;
+    }
+
+    .footer-text {
+        font-size: 0.75rem;
+        margin-top: 12px;
+    }
+
+    .icon-circle {
+        width: 60px;
+        height: 60px;
+        margin-bottom: 8px;
+    }
+}
